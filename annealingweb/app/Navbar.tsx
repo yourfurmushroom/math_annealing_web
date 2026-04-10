@@ -15,7 +15,7 @@ export default function NavBar()
     }
 
     return(
-        <nav className=" w-full h-[10vh] flex justify-between items-center bg-gray-300 ">
+        <nav className=" w-full h-[8vh] flex justify-between items-center bg-gray-300 z-10 fixed">
             <div className=" w-full text-[32px] mx-10" onClick={()=>navigateToPage("/","首頁")}>
                 數位退火研發推動計畫
             </div>
