@@ -16,7 +16,7 @@ export default function NavBar()
 
     return(
         <nav className=" w-full h-[8vh] flex justify-between items-center bg-gray-300 z-10 fixed">
-            <div className=" w-full text-[32px] mx-10" onClick={()=>navigateToPage("/","首頁")}>
+            <div className=" w-full text-[32px] mx-10 cursor-pointer" onClick={()=>navigateToPage("/","首頁")}>
                 數位退火研發推動計畫
             </div>
             <div className="relative w-[60%] grid grid-cols-[repeat(6,1.5fr)_1fr] mx-10 text-center">
@@ -42,6 +42,6 @@ interface NavbarButtonProps{
 function NavbarButton({title,currentPage,action}:NavbarButtonProps)
 {
     return(
-         <div className={`${title===currentPage? "text-blue-400 scale-110":""} border-r-2 last:border-r-0 border-white hover:scale-110 hover:text-blue-400  duration-300 ease-in-out`} onClick={()=>{action(title)}}>{title}</div>
+         <div className={`${title===currentPage? "text-blue-400 scale-110":""} border-r-2 last:border-r-0 border-white hover:scale-110 hover:text-blue-400  duration-300 ease-in-out cursor-pointer`} onClick={()=>{action(title)}}>{title}</div>
     )
 }
