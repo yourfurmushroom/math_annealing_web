@@ -36,6 +36,8 @@ export default function NavBar()
             <div className={`${isOpen ? "grid" : "hidden"} relative w-full grid-cols-1 gap-y-2 px-4 pb-3 text-center text-[15px] sm:text-[18px] lg:grid lg:w-[60%] lg:grid-cols-[repeat(6,1.5fr)_1fr] lg:gap-y-0 lg:px-0 lg:pb-0 lg:mx-10`}>
                 <NavbarButton title="首頁" currentPage={currentPage} action={(title)=>navigateToPage("/",title)}/>
                 <NavbarButton title="研究團隊" currentPage={currentPage} action={(title)=>navigateToPage("/team",title)}/>
+                <NavbarButton title="應用案例" currentPage={currentPage} action={(title)=>navigateToPage("/applications", title)}/>
+                <NavbarButton title="互動遊戲" currentPage={currentPage} action={(title)=>navigateToPage("/games", title)}/>
                 <NavbarButton title="TSP旅行推銷員" currentPage={currentPage} action={(title)=>navigateToPage("/TSP",title)}/>
             </div>
             
