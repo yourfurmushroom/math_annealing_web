@@ -56,7 +56,7 @@ interface AlgorithmDetailCardProps {
 }
 function AlgorithmDetailCard({ title, source }: AlgorithmDetailCardProps) {
     return (
-        <div className="w-[80%] h-[40vh] bg-white rounded-3xl flex flex-col items-center justify-center mx-10 shadow-2xl">
+        <div className="w-[80%] h-[50vh] bg-white rounded-3xl flex flex-col items-center justify-center mx-10 shadow-2xl">
 
             <div className="flex-1 flex items-center justify-center w-full">
                 <img src={source} className="w-[80%] object-contain rounded-xl" />
@@ -80,9 +80,9 @@ function ProjectDetailCard({ title,details, source }: ProjectDetailCardProps) {
 
 
     return (
-        <div className={`w-[80%] ${isOpen?"h-[50vh]":"h-[40vh]"} bg-white rounded-3xl flex flex-col items-center justify-center mx-10 shadow-2xl`} onClick={() => setIsOpen(prev => !prev)}>
+        <div className={`w-[80%] ${isOpen?"h-[60vh]":"h-[50vh]"} bg-white rounded-3xl flex flex-col items-center justify-center mx-10 shadow-2xl`} onClick={() => setIsOpen(prev => !prev)}>
 
-            <div className="flex-1 flex items-center justify-center w-full">
+            <div className="flex items-center justify-center w-full">
                 <img src={source} className="w-[80%] object-contain rounded-xl" />
             </div>
 
