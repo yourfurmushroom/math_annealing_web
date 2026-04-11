@@ -21,12 +21,12 @@ export default function NavBar()
             </div>
             <div className="relative w-[60%] grid grid-cols-[repeat(6,1.5fr)_1fr] mx-10 text-center">
                 <NavbarButton title="首頁" currentPage={currentPage} action={(title)=>navigateToPage("/",title)}/>
-                <NavbarButton title="關於我們" currentPage={currentPage} action={(title)=>navigateToPage("/aboutme",title)}/>
+                {/* <NavbarButton title="關於我們" currentPage={currentPage} action={(title)=>navigateToPage("/aboutme",title)}/> */}
                 <NavbarButton title="研究團隊" currentPage={currentPage} action={(title)=>navigateToPage("/team",title)}/>
-                <NavbarButton title="最新活動" currentPage={currentPage} action={(title)=>navigateToPage("/newevents",title)}/>
-                <NavbarButton title="最新消息" currentPage={currentPage} action={(title)=>navigateToPage("/news",title)}/>
-                <NavbarButton title="聯絡我們" currentPage={currentPage} action={(title)=>navigateToPage("/contactus",title)}/>
-                <NavbarButton title="english" currentPage={currentPage} action={(title)=>{}}/>
+                <NavbarButton title="TSP旅行推銷員" currentPage={currentPage} action={(title)=>navigateToPage("/TSP",title)}/>
+                {/* <NavbarButton title="最新消息" currentPage={currentPage} action={(title)=>navigateToPage("/news",title)}/> */}
+                {/* <NavbarButton title="聯絡我們" currentPage={currentPage} action={(title)=>navigateToPage("/contactus",title)}/> */}
+                {/* <NavbarButton title="english" currentPage={currentPage} action={(title)=>{}}/> */}
             </div>
             
         </nav>
