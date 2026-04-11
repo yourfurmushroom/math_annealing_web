@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: "Courier New", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +27,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
 }
 
 @keyframes scrollLine {
@@ -85,6 +86,9 @@ body {
 {
   opacity: 0;
   animation: fade-in 2.0s ease-in forwards;
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  line-height: 1.1;
+  word-break: break-word;
 }
 
 .delay1

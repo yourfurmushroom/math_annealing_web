@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { useState } from "react"
 
 const annealingDetail = `退火原為冶金技術，透過將金屬加熱至高溫後緩慢降溫，使其內部結構重新排列至更整齊、能量更低且穩定的狀態。
@@ -16,30 +17,30 @@ export default function MainContent() {
 
     return (
         <div className="w-full bg-gray-200" id="mainContent">
-            <h1 className="text-center text-[64px] font-bold text-black py-10 pt-[8vh]">
+            <h1 className="py-10 pt-[120px] text-center text-[42px] font-bold text-black sm:text-[52px] lg:pt-[8vh] lg:text-[64px]">
                 研發與推廣
             </h1>
 
-            <div className="w-full h-full p-10 mb-10 bg-gray-200 ">
-                <div className=" flex justify-between items-center h-[5vh]">
-                    <div onClick={() => setTab("algorithm")} className={`w-[50%] text-[32px] h-full text-center font-bold rounded-t-2xl ${tab === "algorithm" ? "bg-gray-300 " : "bg-white"}`} >演算法</div>
-                    <div onClick={() => setTab("project")} className={`w-[50%] text-[32px]  h-full text-center font-bold rounded-t-2xl ${tab === "project" ? "bg-gray-300" : "bg-white "}`} >硬體</div>
+            <div className="mb-10 w-full bg-gray-200 px-4 py-4 sm:px-6 lg:p-10">
+                <div className="flex justify-between items-center">
+                    <div onClick={() => setTab("algorithm")} className={`w-[50%] cursor-pointer text-[22px] sm:text-[26px] lg:h-[5vh] lg:text-[32px] h-full text-center font-bold rounded-t-2xl ${tab === "algorithm" ? "bg-gray-300 " : "bg-white"}`} >演算法</div>
+                    <div onClick={() => setTab("project")} className={`w-[50%] cursor-pointer text-[22px] sm:text-[26px] lg:h-[5vh] lg:text-[32px] h-full text-center font-bold rounded-t-2xl ${tab === "project" ? "bg-gray-300" : "bg-white "}`} >硬體</div>
                 </div>
 
                 {tab === "algorithm" &&
-                    <div className="bg-gray-300 rounded-b-3xl py-15 w-full h-[60vh]">
-                        <div className="flex justify-between gap-6 ">
+                    <div className="w-full rounded-b-3xl bg-gray-300 px-4 py-8 lg:h-[60vh] lg:py-15">
+                        <div className="flex flex-col gap-6 lg:flex-row lg:justify-between">
                             <AlgorithmDetailCard title="數位退火技術" source="/annealing.gif"/>
                             <AlgorithmDetailCard title="GPU退火運算技術" source="/Quantum.png"/>
                         </div>
-                        <div className="w-full p-10 text-[26px]">
+                        <div className="w-full p-4 text-[18px] sm:text-[22px] lg:p-10 lg:text-[26px]">
                             {annealingDetail}
                         </div>
                     </div>
                 }
 
                 {tab === "project" && 
-                <div className="flex justify-between gap-6 py-15 bg-gray-300 rounded-b-3xl h-[60vh]">
+                <div className="flex flex-col gap-6 rounded-b-3xl bg-gray-300 px-4 py-8 lg:h-[60vh] lg:flex-row lg:justify-between lg:py-15">
                         <ProjectDetailCard title="軟體" source="/annealing.gif" details={projectDetailSoftware}/>
                         <ProjectDetailCard title="硬體" source="/Quantum.png" details={projectDetailHardware}/>
                 </div>}
@@ -56,13 +57,13 @@ interface AlgorithmDetailCardProps {
 }
 function AlgorithmDetailCard({ title, source }: AlgorithmDetailCardProps) {
     return (
-        <div className="w-[80%] h-[50vh] bg-white rounded-3xl flex flex-col items-center justify-center mx-10 shadow-2xl">
+        <div className="mx-0 flex w-full flex-col items-center justify-center rounded-3xl bg-white p-5 shadow-2xl lg:mx-10 lg:h-[50vh] lg:w-[80%]">
 
-            <div className="flex-1 flex items-center justify-center w-full">
-                <img src={source} className="w-[80%] object-contain rounded-xl" />
+            <div className="flex flex-1 items-center justify-center w-full">
+                <Image src={source} alt={title} width={480} height={320} unoptimized className="w-[80%] object-contain rounded-xl" />
             </div>
 
-            <div className="flex items-center justify-center h-[5vh] text-[28px]">
+            <div className="flex items-center justify-center text-center text-[22px] sm:text-[24px] lg:h-[5vh] lg:text-[28px]">
                 {title}
             </div>
 
@@ -80,17 +81,17 @@ function ProjectDetailCard({ title,details, source }: ProjectDetailCardProps) {
 
 
     return (
-        <div className={`w-[80%] ${isOpen?"h-[60vh]":"h-[50vh]"} bg-white rounded-3xl flex flex-col items-center justify-center mx-10 shadow-2xl`} onClick={() => setIsOpen(prev => !prev)}>
+        <div className={`mx-0 w-full cursor-pointer rounded-3xl bg-white p-5 shadow-2xl lg:mx-10 lg:w-[80%] ${isOpen?"lg:h-[60vh]":"lg:h-[50vh]"}`} onClick={() => setIsOpen(prev => !prev)}>
 
             <div className="flex items-center justify-center w-full">
-                <img src={source} className="w-[80%] object-contain rounded-xl" />
+                <Image src={source} alt={title} width={480} height={320} unoptimized className="w-[80%] object-contain rounded-xl" />
             </div>
 
-            <div className="flex items-center justify-center h-[5vh] text-[28px]">
+            <div className="flex items-center justify-center text-center text-[22px] sm:text-[24px] lg:h-[5vh] lg:text-[28px]">
                 {isOpen?`⭡${title}⭡`:`↓${title}↓`}
             </div>
 
-            {isOpen&&<div className="h-[10vh] p-10">
+            {isOpen&&<div className="p-4 text-[18px] sm:text-[20px] lg:h-[10vh] lg:p-10">
                 {details}
                 </div>}
 
