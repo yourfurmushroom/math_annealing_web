@@ -21,7 +21,7 @@ export default function MainContent() {
         <div className="w-full bg-white dark:bg-slate-950">
 
             {/* 1. 歡迎區塊 (Hero Section) */}
-            <section className="relative overflow-hidden px-6 py-24 sm:py-32 lg:px-8 border-b border-slate-100 dark:border-slate-800">
+            <section className="relative overflow-hidden px-6 py-24 sm:py-32 lg:px-8 border-b border-slate-100 dark:border-slate-800 " id="mainContent">
                 <div className="mx-auto max-w-5xl">
                     {/* 標題區塊：Pilot Research Programs of Digital Annealers */}
                     <div className="text-center">
@@ -52,7 +52,7 @@ export default function MainContent() {
             </section >
 
             {/* 2. 研發與推廣區塊 */}
-            < section className="bg-slate-50 py-24 dark:bg-slate-900/50" id="mainContent" >
+            < section className="bg-slate-50 py-24 dark:bg-slate-900/50" >
                 <div className="mx-auto max-w-6xl px-6">
                     <div className="mb-16 text-center">
                         <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">研發與推廣</h2>

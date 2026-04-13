@@ -16,6 +16,7 @@ export default function RootLayout({
     <html
       lang="en"
       className="h-full antialiased"
+      data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col">
       <NavBar></NavBar>
