@@ -1,13 +1,9 @@
 'use client'
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-
+import { itemsName,DropDownItem } from "./Data/gameList";
 export default function NavBar() {
-    const itemsName: DropDownItem[] = [
-        { title: "TSP", path: "/games/tsp" },
-        { title: "迷宮", path: "/games/dungeon" },
-        { title: "排班", path: "/games/schedule" }
-    ]
+    
 
     const route = useRouter()
     const [currentPage, setCurrentPage] = useState<string>("")
@@ -87,10 +83,6 @@ function NavbarButton({ title, currentPage, action }: NavbarButtonProps) {
     )
 }
 
-interface DropDownItem {
-    title: string
-    path: string
-}
 
 interface DropDownProps {
     title: string
