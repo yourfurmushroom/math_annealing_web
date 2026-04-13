@@ -520,7 +520,7 @@ export default function Home() {
                             <button
                                 onClick={initialize}
                                 style={{ marginTop: '10px',width:'50%' }}
-                                className="border-2 border-gray-500 rounded-2xl shadow-2xl p-3 hover:bg-gray-200 ease-in-out duration-200  bg-red-500"
+                                className="border-2 border-gray-500 rounded-2xl shadow-2xl p-3 hover:bg-gray-200 ease-in-out duration-200 "
                             >
                                 Reset and Randomize
                             </button>
