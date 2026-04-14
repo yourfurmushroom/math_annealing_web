@@ -47,7 +47,12 @@ interface MemberCardProps {
   otherPosition: string[],
 }
 function MemberCard({ imagePath, labPath, subTitle, name, position, otherPosition }: MemberCardProps) {
-  const memberImagePath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  const memberImagePath =
+  imagePath.startsWith("http://") || imagePath.startsWith("https://")
+    ? imagePath
+    : imagePath.startsWith("/")
+      ? imagePath
+      : `/${imagePath}`;
 
   // 實作點擊跳轉函式
   const handleCardClick = () => {
