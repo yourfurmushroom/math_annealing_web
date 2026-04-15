@@ -6,5 +6,5 @@ export const member=[
   {"imagePath":"https://www.rcas.sinica.edu.tw/images/faculty/Lin_JungHsin.jpg","labPath":"https://www.rcas.sinica.edu.tw/web/mem_faculty/Lin_JungHsin.html","subTitle":"共同主持人","name":"林榮信 Jung-Hsin Lin","position":"副主任","otherPosition":["中央研究院生醫轉譯研究中心－研究員兼副主任","兼任中央研究院生醫轉譯研究中心副主任"]},
   {"imagePath":"https://www.stat.ntpu.edu.tw/lyadmin/pages/uploads/image/cus1_bwlrvm4lx0.jpeg","labPath":"https://hiiampingyang.notion.site/","subTitle":"共同主持人","name":"陳秉洋 Ping-Yang Chen","position":"副教授","otherPosition":["國立臺北大學統計學系－助理教授"]},
   {"imagePath":"https://www.csie.ncku.edu.tw/media/images/member/teacher/teacher35.jpeg","labPath":"https://ncku-ccs.github.io/netdb-web/","subTitle":"共同主持人","name":"莊坤達 Kun-Ta Chuang","position":"副教授","otherPosition":["國立成功大學資訊工程學系－副教授"]},
-  {"imagePath":"https://faculty.nptu.edu.tw/~cho/coul.jpg","labPath":"https://faculty.nptu.edu.tw/~cho/","subTitle":" ","name":"歐家和 Chia-Ho Ou","position":"教授","otherPosition":["國立屏東大學資訊工程學系－教授","兼任資訊學院院長"]},
+  {"imagePath":"https://faculty.nptu.edu.tw/~cho/coul.jpg","labPath":"https://faculty.nptu.edu.tw/~cho/","subTitle":"共同主持人","name":"歐家和 Chia-Ho Ou","position":"教授","otherPosition":["國立屏東大學資訊工程學系－教授","兼任資訊學院院長"]},
 ]
