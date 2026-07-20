@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 const DEFAULT_BACKEND_URL = "http://localhost:9999";
 const BACKEND_URL = (process.env.ANNEALING_BACKEND_URL ?? DEFAULT_BACKEND_URL).replace(/\/$/, "");
