@@ -1,8 +1,14 @@
-
 export interface TagParameter {
     parameter_name: string;
     parameter_alias: string;
     parameter_description: string;
+}
+
+export type ConstraintParameters = Record<string, unknown>;
+
+export interface Constraint {
+    name: string;
+    parameters: ConstraintParameters;
 }
 
 export interface TagProps {
@@ -10,35 +16,33 @@ export interface TagProps {
     key: string;
     description: string;
     parameters: TagParameter[];
-    evaluate: (shift: number[][], parameters: {}) => Promise<number>;
+    evaluate: (shift: number[][], parameters: ConstraintParameters) => Promise<number>;
 }
 
-type Parameters = {
-    [key: string]: any;
-};
-
 function average(arr: number[]) {
-    let sum = 0;
+    if (arr.length === 0) return 0;
+
+    let total = 0;
     for (const num of arr) {
-        sum += num;
+        total += num;
     }
-    return sum / arr.length;
+    return total / arr.length;
 }
 
 function sum_range(arr: number[], start: number, end: number) {
-    let sum = Number(0);
+    let total = Number(0);
     for (let i = start; i < end; ++i) {
-        sum += arr[i];
+        total += arr[i];
     }
-    return sum;
+    return total;
 }
 
 function sum(arr: number[]) {
-    let sum = 0;
+    let total = 0;
     for (const num of arr) {
-        sum += Number(num);
+        total += Number(num);
     }
-    return sum;
+    return total;
 }
 
 export const TagsDefinition: TagProps[] = [
@@ -53,21 +57,18 @@ export const TagsDefinition: TagProps[] = [
                 parameter_description: '預期工作天數'
             },
         ],
-        evaluate: (shift: number[][], parameters: Parameters) => {
-            return new Promise((resolve, reject) => {
-                const enwd = Number(parameters["ewd"]);
-                if (enwd <= 0) {
-                    console.warn("expected_working_days: enwd 無效，返回 0");
-                    resolve(0);
-                    return;
-                }
-                let failed_rates = [];
-                for (let i = 0; i < shift.length; ++i) {
-                    failed_rates.push(Math.abs(enwd - sum(shift[i])) / enwd);
-                }
-                const score = Math.max(0, Math.min(1, 1 - average(failed_rates)));
-                resolve(score);
-            });
+        evaluate: async (shift: number[][], parameters: ConstraintParameters) => {
+            const enwd = Number(parameters["ewd"]);
+            if (enwd <= 0) {
+                console.warn("expected_working_days: enwd 無效，返回 0");
+                return 0;
+            }
+
+            const failed_rates: number[] = [];
+            for (let i = 0; i < shift.length; ++i) {
+                failed_rates.push(Math.abs(enwd - sum(shift[i])) / enwd);
+            }
+            return Math.max(0, Math.min(1, 1 - average(failed_rates)));
         }
     },
     {
@@ -76,27 +77,25 @@ export const TagsDefinition: TagProps[] = [
         description: `你可以為每個員工自訂休假，請編輯每位員工的班表。 
                       1 代表工作日，0 代表休假日。`,
         parameters: [],
-        evaluate: (shift: number[][], parameters: Parameters) => {
-            return new Promise((resolve, reject) => {
-                const reserved_leave = parameters['reserved_leave'];
-                if (!reserved_leave || typeof reserved_leave !== 'object') {
-                    resolve(1); // 如果沒給 leave，視為完全符合
-                    return;
-                }
-                let failed = 0;
-                let amount_of_reserved_leave = 0;
-                Object.entries(reserved_leave).forEach(([key, value]) => {
-                    const row = Number(key);
-                    for (const col of value as number[]) {
-                        if (col < shift[row].length && shift[row][col] !== 0) {
-                            failed += 1;
-                        }
-                        amount_of_reserved_leave += 1;
-                    }
-                });
+        evaluate: async (shift: number[][], parameters: ConstraintParameters) => {
+            const reserved_leave = parameters['reserved_leave'];
+            if (!reserved_leave || typeof reserved_leave !== 'object') {
+                return 1;
+            }
 
-                resolve(amount_of_reserved_leave ? 1 - (failed / amount_of_reserved_leave) : 1);
-            })
+            let failed = 0;
+            let amount_of_reserved_leave = 0;
+            Object.entries(reserved_leave).forEach(([key, value]) => {
+                const row = Number(key);
+                for (const col of value as number[]) {
+                    if (col < shift[row].length && shift[row][col] !== 0) {
+                        failed += 1;
+                    }
+                    amount_of_reserved_leave += 1;
+                }
+            });
+
+            return amount_of_reserved_leave ? 1 - (failed / amount_of_reserved_leave) : 1;
         }
     },
     {
@@ -110,27 +109,23 @@ export const TagsDefinition: TagProps[] = [
                 parameter_description: '每班預期人數'
             }
         ],
-        evaluate: (shift: number[][], parameters: Parameters) => {
-            return new Promise((resolve, reject) => {
-                let failed = 0;
-                let number_of_days = 0;
-                if (shift.length > 0 && shift[0]) {
-                    number_of_days = shift[0].length;
+        evaluate: async (shift: number[][], parameters: ConstraintParameters) => {
+            let failed = 0;
+            let number_of_days = 0;
+            if (shift.length > 0 && shift[0]) {
+                number_of_days = shift[0].length;
+            }
+
+            for (let i = 0; i < number_of_days; ++i) {
+                let total = 0;
+                for (let j = 0; j < shift.length; ++j) {
+                    total += Number(shift[j][i]);
                 }
-
-                for (let i = 0; i < number_of_days; ++i) {
-                    let sum = 0;
-                    for (let j = 0; j < shift.length; ++j) {
-                        sum += Number(shift[j][i]);
-                    }
-                    if (sum !== Number(parameters['enwps'])) {
-                        failed += 1;
-                    }
+                if (total !== Number(parameters['enwps'])) {
+                    failed += 1;
                 }
-                resolve(number_of_days !== 0 ? 1 - failed / number_of_days : 0);
-
-            })
-
+            }
+            return number_of_days !== 0 ? 1 - failed / number_of_days : 0;
         }
     },
     {
@@ -145,32 +140,29 @@ export const TagsDefinition: TagProps[] = [
                 parameter_description: '最長連續工作天數'
             }
         ],
-        evaluate: (shift: number[][], parameters: Parameters) => {
-            return new Promise((resolve, reject) => {
-                let maximum_consecutive_working_days = Number(parameters["mcwd"]) + 1;
-                if (maximum_consecutive_working_days <= 0) {
-                    console.warn("maximum_consecutive_working_days: mcwd 無效，返回 0");
-                    resolve(0);
-                    return;
-                }
-                let nrows = shift.length;
-                let ncols = shift[0]?.length || 0;
-                if (ncols <= maximum_consecutive_working_days) {
-                    console.warn("maximum_consecutive_working_days: ncols 太小，返回 0");
-                    resolve(0);
-                    return;
-                }
-                let failed = 0;
-                for (let i = 0; i < nrows; ++i) {
-                    for (let j = 0; j < ncols - maximum_consecutive_working_days; ++j) {
-                        if (sum_range(shift[i], j, j + maximum_consecutive_working_days) >= maximum_consecutive_working_days) {
-                            failed += 1;
-                        }
+        evaluate: async (shift: number[][], parameters: ConstraintParameters) => {
+            const maximum_consecutive_working_days = Number(parameters["mcwd"]) + 1;
+            if (maximum_consecutive_working_days <= 0) {
+                console.warn("maximum_consecutive_working_days: mcwd 無效，返回 0");
+                return 0;
+            }
+
+            const nrows = shift.length;
+            const ncols = shift[0]?.length || 0;
+            if (ncols <= maximum_consecutive_working_days) {
+                console.warn("maximum_consecutive_working_days: ncols 太小，返回 0");
+                return 0;
+            }
+
+            let failed = 0;
+            for (let i = 0; i < nrows; ++i) {
+                for (let j = 0; j < ncols - maximum_consecutive_working_days; ++j) {
+                    if (sum_range(shift[i], j, j + maximum_consecutive_working_days) >= maximum_consecutive_working_days) {
+                        failed += 1;
                     }
                 }
-                const score = Math.max(0, Math.min(1, 1 - failed / (nrows * (ncols - maximum_consecutive_working_days))));
-                resolve(score);
-            });
+            }
+            return Math.max(0, Math.min(1, 1 - failed / (nrows * (ncols - maximum_consecutive_working_days))));
         }
     },
     {
@@ -185,33 +177,30 @@ export const TagsDefinition: TagProps[] = [
                 parameter_description: '7 天內最少休假天數'
             }
         ],
-        evaluate: (shift: number[][], parameters: Parameters) => {
-            return new Promise((resolve, reject) => {
-                const n = Number(parameters["mndlw7d"]);
-                if (n <= 0 || n >= 7) {
-                    console.warn("minimum_n_days_leave_within_7_days: mndlw7d 無效，返回 0");
-                    resolve(0);
-                    return;
-                }
-                let nrows = shift.length;
-                let ncols = shift[0]?.length || 0;
-                let failed = 0;
-                let weekend = [];
-                for (let i = 0; i + 7 < ncols; i += 7) {
-                    weekend.push(i);
-                }
-                for (let i = 0; i < nrows; ++i) {
-                    for (let j = 0; j < weekend.length; ++j) {
-                        let sum = 0;
-                        if (weekend[j] + 7 < ncols) {
-                            sum = sum_range(shift[i], weekend[j], weekend[j] + 7);
-                            if (sum > 7 - n) failed += 1;
-                        }
+        evaluate: async (shift: number[][], parameters: ConstraintParameters) => {
+            const n = Number(parameters["mndlw7d"]);
+            if (n <= 0 || n >= 7) {
+                console.warn("minimum_n_days_leave_within_7_days: mndlw7d 無效，返回 0");
+                return 0;
+            }
+
+            const nrows = shift.length;
+            const ncols = shift[0]?.length || 0;
+            let failed = 0;
+            const weekend: number[] = [];
+            for (let i = 0; i + 7 < ncols; i += 7) {
+                weekend.push(i);
+            }
+            for (let i = 0; i < nrows; ++i) {
+                for (let j = 0; j < weekend.length; ++j) {
+                    let total = 0;
+                    if (weekend[j] + 7 < ncols) {
+                        total = sum_range(shift[i], weekend[j], weekend[j] + 7);
+                        if (total > 7 - n) failed += 1;
                     }
                 }
-                const score = Math.max(0, Math.min(1, 1 - failed / (nrows * weekend.length)));
-                resolve(score);
-            });
+            }
+            return Math.max(0, Math.min(1, 1 - failed / (nrows * weekend.length)));
         }
     },
     {
@@ -219,27 +208,26 @@ export const TagsDefinition: TagProps[] = [
         key: 'successive_shift_pair',
         description: `連續班次配對：適用於喜歡連續工作天數的員工。`,
         parameters: [],
-        evaluate: (shift: number[][], parameters: {}) => {
-            return new Promise((resolve, reject) => {
-                let nrows = shift.length;
-                let ncols = 0;
-                if (shift.length > 0 && shift[0]) {
-                    ncols = shift[0].length;
-                }
-                let failed = 0;
-                for (let i = 0; i < nrows; ++i) {
-                    for (let j = 1; j < ncols - 1; ++j) {
-                        if (shift[i][j - 1] === 0 && shift[i][j] === 1 && shift[i][j + 1] === 0) {
-                            failed += 1;
-                        }
-                    }
-                    if ((shift[i][0] === 1 && shift[i][1] === 0) || (shift[i][ncols - 1] === 1 && shift[i][ncols - 2] === 0)) {
+        evaluate: async (shift: number[][]) => {
+            const nrows = shift.length;
+            let ncols = 0;
+            if (shift.length > 0 && shift[0]) {
+                ncols = shift[0].length;
+            }
+
+            let failed = 0;
+            for (let i = 0; i < nrows; ++i) {
+                for (let j = 1; j < ncols - 1; ++j) {
+                    if (shift[i][j - 1] === 0 && shift[i][j] === 1 && shift[i][j + 1] === 0) {
                         failed += 1;
                     }
                 }
+                if ((shift[i][0] === 1 && shift[i][1] === 0) || (shift[i][ncols - 1] === 1 && shift[i][ncols - 2] === 0)) {
+                    failed += 1;
+                }
+            }
 
-                resolve(1 - (failed / (nrows * ncols)));
-            })
+            return nrows * ncols > 0 ? 1 - (failed / (nrows * ncols)) : 0;
         }
     },
     {
@@ -247,26 +235,18 @@ export const TagsDefinition: TagProps[] = [
         key: 'consecutive_2_days_leave',
         description: `演算法會盡量安排員工有連續休假日。`,
         parameters: [],
-        evaluate: (shift: number[][], parameters: {}) => {
-            return new Promise((resolve, reject) => {
-                let nrows = shift.length;
-                let ncols = 0;
-                if (shift.length > 0 && shift[0]) {
-                    ncols = shift[0].length;
-                }
-
-                let failed = 0;
-                let all_leave = 0
-                let all_consecutive_shift_pair = 0
-                const leave_re = /0+/g;
-                const consecutive_leave_re = /(?:00)+0*/g;
-                for (let i = 0; i < nrows; ++i) {
-                    const row = shift[i].join('');
-                    all_consecutive_shift_pair += [...row.matchAll(consecutive_leave_re)].length
-                    all_leave += [...row.matchAll(leave_re)].length
-                }
-                resolve(all_leave > 0 ? all_consecutive_shift_pair / all_leave : 0)
-            })
+        evaluate: async (shift: number[][]) => {
+            const nrows = shift.length;
+            let all_leave = 0;
+            let all_consecutive_shift_pair = 0;
+            const leave_re = /0+/g;
+            const consecutive_leave_re = /(?:00)+0*/g;
+            for (let i = 0; i < nrows; ++i) {
+                const row = shift[i].join('');
+                all_consecutive_shift_pair += [...row.matchAll(consecutive_leave_re)].length;
+                all_leave += [...row.matchAll(leave_re)].length;
+            }
+            return all_leave > 0 ? all_consecutive_shift_pair / all_leave : 0;
         }
     },
     {
@@ -274,32 +254,28 @@ export const TagsDefinition: TagProps[] = [
         key: 'no_consecutive_leave',
         description: `演算法會盡量避免安排員工連續休假。`,
         parameters: [],
-        evaluate: (shift: number[][], parameters: {}) => {
-            return new Promise((resolve, reject) => {
-                let nrows = shift.length;
-                let ncols = 0;
-                if (shift.length > 0 && shift[0]) {
-                    ncols = shift[0].length;
-                }
+        evaluate: async (shift: number[][]) => {
+            const nrows = shift.length;
+            let ncols = 0;
+            if (shift.length > 0 && shift[0]) {
+                ncols = shift[0].length;
+            }
 
-                let failed = 0;
-                let amount_of_leave = 0;
+            let failed = 0;
+            let amount_of_leave = 0;
 
-                for (let i = 0; i < nrows; ++i) {
-                    for (let j = 0; j < ncols - 1; ++j) {
-                        if (shift[i][j] === 0) {
-                            amount_of_leave += 1;
-                        }
+            for (let i = 0; i < nrows; ++i) {
+                for (let j = 0; j < ncols - 1; ++j) {
+                    if (shift[i][j] === 0) {
+                        amount_of_leave += 1;
+                    }
 
-                        if (shift[i][j] === 0 && shift[i][j + 1] === 0) {
-                            failed += 1;
-                        }
+                    if (shift[i][j] === 0 && shift[i][j + 1] === 0) {
+                        failed += 1;
                     }
                 }
-                resolve(amount_of_leave === 0 ? 1 : 1 - (failed / amount_of_leave));
-            })
+            }
+            return amount_of_leave === 0 ? 1 : 1 - (failed / amount_of_leave);
         }
     }
-
 ]
-

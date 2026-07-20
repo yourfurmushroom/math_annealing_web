@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from "react";
-import { TagsDefinition } from "./Utilities";
+import { Constraint, ConstraintParameters, TagProps, TagsDefinition } from "./Utilities";
 
 interface AttributeInterface {
-  setRow: React.Dispatch<React.SetStateAction<number>>;
-  setColumn: React.Dispatch<React.SetStateAction<number>>;
+  setRow: (value: number) => void;
+  setColumn: (value: number) => void;
   row: number;
   column: number;
   gridStatus: string[][];
@@ -13,16 +13,11 @@ interface AttributeInterface {
   setConstraints: React.Dispatch<React.SetStateAction<Constraint[]>>;
 }
 
-interface Constraint {
-  name: string;
-  parameters: Record<string, any>;
-}
-
 export default function AttributePanel({ gridStatus, setRow, setColumn, column, row, reservedLeave,constraints, setConstraints }: AttributeInterface) {
   const [overallScore, setOverallScore] = useState<number>(0);
   const [scoreBreakdown, setScoreBreakdown] = useState<Record<string, { score: number; weight: number }>>({});
   const [modalTag, setModalTag] = useState<TagProps | null>(null);
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [formValues, setFormValues] = useState<ConstraintParameters>({});
 
   useEffect(() => {
     async function calculateScores() {
@@ -115,12 +110,11 @@ export default function AttributePanel({ gridStatus, setRow, setColumn, column, 
         <Score overallScore={overallScore} scoreBreakdown={scoreBreakdown} />
       </div>
       <div className="bg-white shadow-2xl shadow-gray-300">
-        <ShiftConfiguration gridStatus={gridStatus} setRow={setRow} setColumn={setColumn} column={column} row={row} constraints={constraints} setConstraints={setConstraints} />
+        <ShiftConfiguration setRow={setRow} setColumn={setColumn} column={column} row={row} />
       </div>
       <div className="bg-white shadow-2xl shadow-gray-300">
         <TagSelector
           constraints={constraints}
-          onAddConstraint={handleAddConstraint}
           onRemoveConstraint={handleRemoveConstraint}
           onOpenModal={handleOpenModal}
         />
@@ -164,7 +158,14 @@ function Score({ overallScore, scoreBreakdown }: { overallScore: number; scoreBr
   );
 }
 
-function ShiftConfiguration({ setRow, setColumn, column, row,constraints, setConstraints }: AttributeInterface) {
+interface ShiftConfigurationProps {
+  setRow: (value: number) => void;
+  setColumn: (value: number) => void;
+  row: number;
+  column: number;
+}
+
+function ShiftConfiguration({ setRow, setColumn, column, row }: ShiftConfigurationProps) {
   return (
     <div className="h-fit bg-white p-4 rounded shadow">
       <h2 className="text-lg font-bold mb-4">排班配置</h2>
@@ -192,17 +193,8 @@ function ShiftConfiguration({ setRow, setColumn, column, row,constraints, setCon
   );
 }
 
-interface TagProps {
-  text: string;
-  key: string;
-  description: string;
-  parameters: { parameter_name: string; parameter_alias: string; parameter_description: string }[];
-  evaluate: (shift: number[][], parameters: {}) => Promise<number>;
-}
-
 interface TagSelectorProps {
   constraints: Constraint[];
-  onAddConstraint: (constraint: Constraint) => void;
   onRemoveConstraint: (constraintName: string) => void;
   onOpenModal: (tag: TagProps) => void;
 }
@@ -232,12 +224,12 @@ function TagSelector({ constraints, onRemoveConstraint, onOpenModal }: TagSelect
                       ([key, value], index) =>
                         key !== "weight" ? (
                           <span key={index}>
-                            {key}: {value}
+                            {key}: {String(value)}
                             <br />
                           </span>
                         ) : null
                     )}
-                    weight: {constraints.find(c => c.name === tag.key)?.parameters["weight"] || 1}
+                    weight: {String(constraints.find(c => c.name === tag.key)?.parameters["weight"] || 1)}
                   </div>
                 ) : (
                   "點擊設置參數"
@@ -253,15 +245,20 @@ function TagSelector({ constraints, onRemoveConstraint, onOpenModal }: TagSelect
 
 interface TagModalProps {
   tag: TagProps;
-  formValues: Record<string, any>;
+  formValues: ConstraintParameters;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAdd: () => void;
   onClose: () => void;
 }
 
 function TagModal({ tag, formValues, onInputChange, onAdd, onClose }: TagModalProps) {
+  const inputValue = (name: string) => {
+    const value = formValues[name];
+    return typeof value === "number" || typeof value === "string" ? value : "";
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg max-w-md w-full">
         <h3 className="text-lg font-bold mb-2">{tag.text}</h3>
         <p className="text-sm text-gray-600 mb-4">{tag.description}</p>
@@ -271,7 +268,7 @@ function TagModal({ tag, formValues, onInputChange, onAdd, onClose }: TagModalPr
             <input
               type="number"
               name={param.parameter_alias}
-              value={formValues[param.parameter_alias] || ""}
+              value={inputValue(param.parameter_alias)}
               onChange={onInputChange}
               className="border p-1 rounded w-full"
               placeholder="請輸入值"
@@ -285,7 +282,7 @@ function TagModal({ tag, formValues, onInputChange, onAdd, onClose }: TagModalPr
           <input
             type="number"
             name="weight"
-            value={formValues["weight"] || ""}
+            value={inputValue("weight")}
             onChange={onInputChange}
             className="border p-1 rounded w-full"
             placeholder="請輸入重要程度"

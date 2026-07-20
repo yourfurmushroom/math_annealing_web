@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import NavBar from "./Navbar";
+import ContactUs from "./ContactUs";
 
 export const metadata: Metadata = {
   title: "數位退火研發推動計畫",
@@ -19,9 +20,12 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col">
-      <NavBar></NavBar>
-        {children}
-        </body>
+        <NavBar />
+        <div className="flex-1 [--navbar-offset:120px] pt-[var(--navbar-offset)] lg:[--navbar-offset:8vh]">
+          {children}
+        </div>
+        <ContactUs></ContactUs>
+      </body>
     </html>
   );
 }

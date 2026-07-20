@@ -88,6 +88,7 @@ export default function MainContent() {
                                             src="/demo.png"
                                             alt="Annealing Principles"
                                             fill
+                                            sizes="(max-width: 1024px) 100vw, 896px"
                                             className="object-contain p-4"
                                         />
                                     </div>
@@ -100,7 +101,7 @@ export default function MainContent() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid gap-10 lg:grid-cols-2 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                            <div className="grid gap-10 lg:grid-cols-2 items-start animate-in fade-in slide-in-from-bottom-6 duration-700">
                                 <ProjectCard
                                     title="軟體研發技術"
                                     details={projectDetailSoftware}
@@ -122,15 +123,12 @@ export default function MainContent() {
     )
 }
 
-/**
- * 應用卡片組件：支援 Tag 顯示與內容展開
- */
 function ProjectCard({ title, details, color, tags }: { title: string, details: string, color: string, tags: string[] }) {
     const [isOpen, setIsOpen] = useState(false)
     return (
         <div
             onClick={() => setIsOpen(!isOpen)}
-            className="group cursor-pointer rounded-[2.5rem] border border-slate-100 bg-slate-50 p-10 transition-all hover:border-blue-300 hover:shadow-2xl hover:-translate-y-1 dark:border-slate-800 dark:bg-slate-800/50"
+            className="group self-start cursor-pointer rounded-[2.5rem] border border-slate-100 bg-slate-50 p-10 transition-all hover:border-blue-300 hover:shadow-2xl hover:-translate-y-1 dark:border-slate-800 dark:bg-slate-800/50"
         >
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-2">
@@ -148,7 +146,7 @@ function ProjectCard({ title, details, color, tags }: { title: string, details: 
                 </div>
             </div>
 
-            <div className={`transition-all duration-500 ${isOpen ? "max-h-[600px] opacity-100 mt-8" : "max-h-0 opacity-0"}`}>
+            <div className={`overflow-hidden transition-all duration-500 ${isOpen ? "max-h-[600px] opacity-100 mt-8" : "max-h-0 opacity-0"}`}>
                 <p className="whitespace-pre-line text-lg leading-relaxed text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-6">
                     {details}
                 </p>

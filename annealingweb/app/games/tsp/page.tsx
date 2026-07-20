@@ -1,11 +1,10 @@
 'use client'
 /* eslint-disable */
 import React, { useEffect, useRef, useState } from "react";
-import { useRouter } from 'next/navigation';
 
 export default function Home() {
+    const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const router = useRouter();
 
     const [numNodes, setNumNodes] = useState<number>(5);
     const [houses, setHouses] = useState<{ x: number, y: number, image: string }[]>([]);
@@ -23,95 +22,192 @@ export default function Home() {
     const [draggingHouse, setDraggingHouse] = useState<number | null>(null);
     const [imagesLoaded, setImagesLoaded] = useState<Map<number, HTMLImageElement>>(new Map());
 
+    // Refs mirroring the latest state, so long-lived listeners (ResizeObserver,
+    // setInterval) never read stale closures.
+    const housesRef = useRef<{ x: number, y: number, image: string }[]>([]);
+    const currentPathRef = useRef<number[]>([]);
+    const didDragRef = useRef<boolean>(false);
+
     const initialTemp = 1000;
     const coolingRate = 0.995;
     const [temperature, setTemperature] = useState(initialTemp);
 
     const numImages = 10;
     const imageSize = 50;
+    const nodeRadius = imageSize / 2;
+
+    const clamp = (value: number, min: number, max: number) => {
+        return Math.min(Math.max(value, min), max);
+    };
+
+    const getCanvasSize = () => {
+        const container = containerRef.current;
+        const width = Math.max(Math.floor(container?.clientWidth || window.innerWidth), imageSize * 2);
+        const height = Math.max(Math.floor(container?.clientHeight || window.innerHeight), imageSize * 2);
+
+        return { width, height };
+    };
+
+    const syncCanvasSize = () => {
+        const canvas = canvasRef.current;
+        const { width, height } = getCanvasSize();
+
+        if (canvas && (canvas.width !== width || canvas.height !== height)) {
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        return { width, height };
+    };
 
     const calculatePathDistance = (path: number[], dists: number[][]): number => {
         let dist = 0;
         for (let i = 0; i < path.length; i++) {
-            dist += dists[path[i]][path[(i + 1) % path.length]];
+            dist += dists[path[i]]?.[path[(i + 1) % path.length]] ?? 0;
         }
         return dist;
     };
 
-    const loadImagesAndInitialize = async () => {
-        const imageMap = new Map<number, HTMLImageElement>();
+    const calculateDistances = (points: { x: number, y: number, image: string }[]) => {
+        return points.map((h1, i) =>
+            points.map((h2, j) => {
+                if (i === j) return 0;
+                return Math.round(
+                    Math.sqrt(Math.pow(h1.x - h2.x, 2) + Math.pow(h1.y - h2.y, 2))
+                );
+            })
+        );
+    };
 
-        for (let i = 1; i <= numImages; i++) {
-            const img = new Image();
-            img.src = `/images/${i}.png`;
+    // Load node images once. numNodes changes must NOT re-trigger this,
+    // otherwise overlapping async loads race and the last one to resolve
+    // can overwrite houses with a stale numNodes.
+    useEffect(() => {
+        let cancelled = false;
 
-            await new Promise((resolve) => {
-                img.onload = resolve;
-                img.onerror = () => {
-                    console.error(`Failed to load image: /images/${i}.png`);
-                    resolve(null);
-                };
-            });
+        const loadImages = async () => {
+            const imageMap = new Map<number, HTMLImageElement>();
 
-            imageMap.set(i, img);
-        }
-
-        setImagesLoaded(imageMap);
-
-        if (canvasRef.current) {
-            const canvas = canvasRef.current;
-            const width = window.innerWidth;
-            const height = window.innerHeight - 300;
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const newHouses = Array.from({ length: numNodes }, () => ({
-                x: Math.random() * (width - 100) + 50,
-                y: Math.random() * (height - 100) + 50,
-                image: `/images/${Math.floor(Math.random() * numImages) + 1}.png`
-            }));
-
-            setHouses(newHouses);
-
-            const newDistances = newHouses.map((h1, i) =>
-                newHouses.map((h2, j) => {
-                    if (i === j) return 0;
-                    return Math.round(
-                        Math.sqrt(Math.pow(h1.x - h2.x, 2) + Math.pow(h1.y - h2.y, 2))
-                    );
+            await Promise.all(
+                Array.from({ length: numImages }, (_, k) => {
+                    const i = k + 1;
+                    return new Promise<void>((resolve) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            imageMap.set(i, img);
+                            resolve();
+                        };
+                        img.onerror = () => {
+                            console.error(`Failed to load image: /images/${i}.png`);
+                            resolve();
+                        };
+                        img.src = `/images/${i}.png`;
+                    });
                 })
             );
 
-            setDistances(newDistances);
-
-            let initialPath = Array.from({ length: numNodes }, (_, i) => i).sort(() => Math.random() - 0.5);
-
-            if (startPoint !== null && startPoint < numNodes) {
-                const idx = initialPath.indexOf(startPoint);
-                if (idx !== -1) {
-                    initialPath.splice(idx, 1);
-                    initialPath = [startPoint, ...initialPath];
-                }
-            } else if (startPoint !== null) {
-                setStartPoint(null);
+            if (!cancelled) {
+                setImagesLoaded(imageMap);
             }
+        };
 
-            setCurrentPath(initialPath);
-            setCurrentDistance(calculatePathDistance(initialPath, newDistances));
-            setTemperature(initialTemp);
+        loadImages();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const initializeBoard = () => {
+        if (!canvasRef.current) return;
+
+        const { width, height } = syncCanvasSize();
+
+        const newHouses = Array.from({ length: numNodes }, () => ({
+            x: Math.random() * Math.max(width - imageSize, 1) + nodeRadius,
+            y: Math.random() * Math.max(height - imageSize, 1) + nodeRadius,
+            image: `/images/${Math.floor(Math.random() * numImages) + 1}.png`
+        }));
+
+        setHouses(newHouses);
+
+        const newDistances = calculateDistances(newHouses);
+        setDistances(newDistances);
+
+        let initialPath = Array.from({ length: numNodes }, (_, i) => i).sort(() => Math.random() - 0.5);
+
+        if (startPoint !== null && startPoint < numNodes) {
+            const idx = initialPath.indexOf(startPoint);
+            if (idx !== -1) {
+                initialPath.splice(idx, 1);
+                initialPath = [startPoint, ...initialPath];
+            }
+        } else if (startPoint !== null) {
+            setStartPoint(null);
         }
+
+        setCurrentPath(initialPath);
+        setCurrentDistance(calculatePathDistance(initialPath, newDistances));
+        setTemperature(initialTemp);
     };
 
     useEffect(() => {
-        loadImagesAndInitialize();
+        initializeBoard();
     }, [numNodes]);
 
+    useEffect(() => {
+        housesRef.current = houses;
+    }, [houses]);
+
+    useEffect(() => {
+        currentPathRef.current = currentPath;
+    }, [currentPath]);
+
     const initialize = () => {
-        setImagesLoaded(new Map());
-        setHouses([]);
-        loadImagesAndInitialize();
+        initializeBoard();
     };
+
+    useEffect(() => {
+        const container = containerRef.current;
+        const canvas = canvasRef.current;
+        if (!container || !canvas) return;
+
+        const resizeCanvas = () => {
+            const previousWidth = canvas.width || container.clientWidth;
+            const previousHeight = canvas.height || container.clientHeight;
+            const { width, height } = syncCanvasSize();
+
+            if (previousWidth === width && previousHeight === height) {
+                return;
+            }
+
+            const prevHouses = housesRef.current;
+            if (prevHouses.length === 0) return;
+
+            const resizedHouses = prevHouses.map((house) => ({
+                ...house,
+                x: clamp((house.x / previousWidth) * width, nodeRadius, width - nodeRadius),
+                y: clamp((house.y / previousHeight) * height, nodeRadius, height - nodeRadius),
+            }));
+
+            const newDistances = calculateDistances(resizedHouses);
+
+            setHouses(resizedHouses);
+            setDistances(newDistances);
+            setCurrentDistance(calculatePathDistance(currentPathRef.current, newDistances));
+        };
+
+        resizeCanvas();
+
+        const resizeObserver = new ResizeObserver(resizeCanvas);
+        resizeObserver.observe(container);
+        window.addEventListener('resize', resizeCanvas);
+
+        return () => {
+            resizeObserver.disconnect();
+            window.removeEventListener('resize', resizeCanvas);
+        };
+    }, []);
 
     const performSAIteration = () => {
         if (currentPath.length === 0 || distances.length === 0) return;
@@ -145,20 +241,37 @@ export default function Home() {
         setTemperature(prev => prev * coolingRate);
     };
 
+    const performSARef = useRef(performSAIteration);
+    useEffect(() => {
+        performSARef.current = performSAIteration;
+    });
+
     useEffect(() => {
         const interval = setInterval(() => {
-            performSAIteration();
+            performSARef.current();
         }, iterationSpeed);
 
         return () => clearInterval(interval);
-    }, [currentPath, currentDistance, temperature, distances, iterationSpeed, startPoint, numNodes]);
+    }, [iterationSpeed]);
+
+    // Convert client coords to canvas backing-store coords. The canvas is
+    // stretched by CSS (h-full w-full), so raw clientX/Y offsets are wrong
+    // whenever the backing size and the displayed size differ.
+    const getCanvasCoords = (clientX: number, clientY: number) => {
+        const canvas = canvasRef.current!;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = rect.width > 0 ? canvas.width / rect.width : 1;
+        const scaleY = rect.height > 0 ? canvas.height / rect.height : 1;
+
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY,
+        };
+    };
 
     const handleCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
         if (canvasRef.current) {
-            const canvas = canvasRef.current;
-            const rect = canvas.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const clickY = event.clientY - rect.top;
+            const { x: clickX, y: clickY } = getCanvasCoords(event.clientX, event.clientY);
 
             let closestIdx = -1;
             let minDist = Infinity;
@@ -173,6 +286,7 @@ export default function Home() {
             });
 
             if (closestIdx !== -1) {
+                didDragRef.current = false;
                 setDraggingHouse(closestIdx);
                 setDragOffset({
                     x: clickX - houses[closestIdx].x,
@@ -185,15 +299,15 @@ export default function Home() {
     const handleCanvasMouseMove = (event: MouseEvent) => {
         if (draggingHouse !== null && canvasRef.current && houses[draggingHouse]) {
             const canvas = canvasRef.current;
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
+            const { x: mouseX, y: mouseY } = getCanvasCoords(event.clientX, event.clientY);
+
+            didDragRef.current = true;
 
             const newHouses = [...houses];
             newHouses[draggingHouse] = {
                 ...newHouses[draggingHouse],
-                x: mouseX - dragOffset.x,
-                y: mouseY - dragOffset.y
+                x: clamp(mouseX - dragOffset.x, nodeRadius, canvas.width - nodeRadius),
+                y: clamp(mouseY - dragOffset.y, nodeRadius, canvas.height - nodeRadius)
             };
 
             setHouses(newHouses);
@@ -201,15 +315,14 @@ export default function Home() {
     };
 
     const handleCanvasMouseUp = () => {
-        if (draggingHouse !== null && houses[draggingHouse]) {
-            const newDistances = houses.map((h1, i) =>
-                houses.map((h2, j) => {
-                    if (i === j) return 0;
-                    return Math.round(
-                        Math.sqrt(Math.pow(h1.x - h2.x, 2) + Math.pow(h1.y - h2.y, 2))
-                    );
-                })
-            );
+        if (draggingHouse === null) return;
+
+        // Only rebuild distances/path when the house actually moved.
+        // A plain click (mousedown + mouseup without movement) should not
+        // re-randomize the path — it falls through to handleCanvasClick,
+        // which sets the start point.
+        if (didDragRef.current && houses[draggingHouse]) {
+            const newDistances = calculateDistances(houses);
 
             setDistances(newDistances);
 
@@ -226,16 +339,17 @@ export default function Home() {
             setCurrentPath(newPath);
             setCurrentDistance(calculatePathDistance(newPath, newDistances));
             setTemperature(initialTemp);
-            setDraggingHouse(null);
         }
+
+        setDraggingHouse(null);
     };
 
     const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-        if (draggingHouse === null && canvasRef.current) {
-            const canvas = canvasRef.current;
-            const rect = canvas.getBoundingClientRect();
-            const clickX = event.clientX - rect.left;
-            const clickY = event.clientY - rect.top;
+        // Ignore the click that ends a drag.
+        if (didDragRef.current) return;
+
+        if (canvasRef.current) {
+            const { x: clickX, y: clickY } = getCanvasCoords(event.clientX, event.clientY);
 
             let closestIdx = -1;
             let minDist = Infinity;
@@ -408,7 +522,9 @@ export default function Home() {
 
     return (
         <>
-            <div className="relative mt-[120px] min-h-[calc(100vh-120px)] w-full bg-black px-4 py-12 sm:px-6 lg:mt-[8vh] lg:h-[92vh] lg:min-h-0 lg:px-0"
+            <div
+                ref={containerRef}
+                className="relative min-h-[calc(100vh_-_var(--navbar-offset))] w-full overflow-hidden bg-black lg:h-[calc(100vh_-_var(--navbar-offset))] lg:min-h-0"
                 style={{
                     position: 'relative',
                     backgroundImage: "url('/images/background.png')",
@@ -419,7 +535,8 @@ export default function Home() {
             >
                 <canvas
                     ref={canvasRef}
-                    style={{ display: 'block', zIndex: 10 }}
+                    className="absolute inset-0 h-full w-full"
+                    style={{ display: 'block', zIndex: 0 }}
                     onClick={handleCanvasClick}
                     onMouseDown={handleCanvasMouseDown}
                 />

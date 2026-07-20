@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <main className="w-full bg-white dark:bg-slate-950 min-h-screen">
       {/* 1. Background Banner */}
-      <div className="relative mt-[120px] h-[25vh] w-full bg-[url('/background.jpg')] bg-cover bg-center bg-no-repeat lg:mt-[8vh] flex items-end">
+      <div className="relative h-[25vh] w-full bg-[url('/background.jpg')] bg-cover bg-center bg-no-repeat flex items-end">
         {/* 增加深色遮罩確保文字清晰度 */}
         <div className="absolute inset-0 bg-slate-900/20"></div>
         

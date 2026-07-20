@@ -1,26 +1,29 @@
 'use client'
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import { itemsName,DropDownItem } from "./Data/gameList";
 export default function NavBar() {
     
 
     const route = useRouter()
-    const [currentPage, setCurrentPage] = useState<string>("")
+    const pathname = usePathname()
     const [isOpen, setIsOpen] = useState<boolean>(false)
 
-    function navigateToPage(location: string, title: string) {
-        setCurrentPage(title)
+    function isActivePath(location: string) {
+        return location === "/" ? pathname === "/" : pathname === location || pathname.startsWith(`${location}/`)
+    }
+
+    function navigateToPage(location: string) {
         setIsOpen(false)
         route.push(location)
     }
 
     return (
-        <nav className="fixed z-50 flex w-full flex-col bg-gray-300 lg:h-[8vh] lg:flex-row lg:items-center lg:justify-between   ">
+        <nav className="fixed left-0 top-0 z-50 flex w-full flex-col bg-gray-300 lg:h-[8vh] lg:flex-row lg:items-center lg:justify-between">
             <div className="flex w-full items-center justify-between px-4 py-3 lg:w-full lg:px-0 lg:py-0">
                 <div
                     className="cursor-pointer text-[22px] sm:text-[26px] lg:mx-10 lg:text-[32px]"
-                    onClick={() => navigateToPage("/", "首頁")}
+                    onClick={() => navigateToPage("/")}
                 >
                     數位退火研發推動計畫
                 </div>
@@ -41,23 +44,23 @@ export default function NavBar() {
             <div className={`${isOpen ? "grid" : "hidden"} relative w-full gap-y-2 px-4 pb-3 text-center text-[15px] sm:text-[18px] lg:mx-10 lg:grid lg:w-[60%] lg:grid-cols-4 lg:gap-y-0 lg:px-0 lg:pb-0`}>
                 <NavbarButton
                     title="首頁"
-                    currentPage={currentPage}
-                    action={(title) => navigateToPage("/", title)}
+                    isActive={isActivePath("/")}
+                    action={() => navigateToPage("/")}
                 />
                 <NavbarButton
                     title="研究團隊"
-                    currentPage={currentPage}
-                    action={(title) => navigateToPage("/team", title)}
+                    isActive={isActivePath("/team")}
+                    action={() => navigateToPage("/team")}
                 />
                 <NavbarButton
                     title="應用案例"
-                    currentPage={currentPage}
-                    action={(title) => navigateToPage("/applications", title)}
+                    isActive={isActivePath("/applications")}
+                    action={() => navigateToPage("/applications")}
                 />
 
                 <DropDownNavbarButton
                     title="互動遊戲"
-                    currentPage={currentPage}
+                    pathname={pathname}
                     items={itemsName}
                     navigateToPage={navigateToPage}
                 />
@@ -68,15 +71,15 @@ export default function NavBar() {
 
 interface NavbarButtonProps {
     title: string
-    currentPage: string
-    action: (title: string) => void
+    isActive: boolean
+    action: () => void
 }
 
-function NavbarButton({ title, currentPage, action }: NavbarButtonProps) {
+function NavbarButton({ title, isActive, action }: NavbarButtonProps) {
     return (
         <div
-            className={`${title === currentPage ? "text-blue-400 " : ""} cursor-pointer  border-white px-2 py-3 duration-300 ease-in-out hover:text-blue-400 lg:border-r-2 lg:px-0 lg:py-0 lg:last:border-r-0 lg:hover:scale-110`}
-            onClick={() => { action(title) }}
+            className={`${isActive ? "text-blue-400 " : ""} cursor-pointer  border-white px-2 py-3 duration-300 ease-in-out hover:text-blue-400 lg:border-r-2 lg:px-0 lg:py-0 lg:last:border-r-0 lg:hover:scale-110`}
+            onClick={action}
         >
             {title}
         </div>
@@ -86,13 +89,15 @@ function NavbarButton({ title, currentPage, action }: NavbarButtonProps) {
 
 interface DropDownProps {
     title: string
-    currentPage: string
+    pathname: string
     items: DropDownItem[]
-    navigateToPage: (location: string, title: string) => void
+    navigateToPage: (location: string) => void
 }
 
-function DropDownNavbarButton({ title, currentPage, items, navigateToPage }: DropDownProps) {
+function DropDownNavbarButton({ title, pathname, items, navigateToPage }: DropDownProps) {
     const [isOpen, setIsOpen] = useState<boolean>(false)
+    const isActiveItem = (path: string) => pathname === path || pathname.startsWith(`${path}/`)
+    const hasActiveItem = items.some((item) => isActiveItem(item.path))
 
     return (
         <div
@@ -101,7 +106,7 @@ function DropDownNavbarButton({ title, currentPage, items, navigateToPage }: Dro
             onMouseLeave={() => setIsOpen(false)}
         >
             <div
-                className={`${title === currentPage ? "text-blue-400" : ""} cursor-pointer border-white px-2 py-3 duration-300 ease-in-out hover:text-blue-400 lg:border-r-2 lg:px-0 lg:py-0 lg:last:border-r-0 ${isOpen ? "bg-gray-300 rounded-tr-md" : ""} `}
+                className={`${hasActiveItem ? "text-blue-400" : ""} cursor-pointer border-white px-2 py-3 duration-300 ease-in-out hover:text-blue-400 lg:border-r-2 lg:px-0 lg:py-0 lg:last:border-r-0 ${isOpen ? "bg-gray-300 rounded-tr-md" : ""} `}
             >
                 {title}
             </div>
@@ -111,10 +116,10 @@ function DropDownNavbarButton({ title, currentPage, items, navigateToPage }: Dro
                     {items.map((item) => (
                         <div
                             key={item.path}
-                            className={`${item.title === currentPage ? "text-blue-400" : ""} cursor-pointer px-4 py-2 text-left hover:bg-gray-200 rounded-md`}
+                            className={`${isActiveItem(item.path) ? "text-blue-400" : ""} cursor-pointer px-4 py-2 text-left hover:bg-gray-200 rounded-md`}
                             onClick={() => {
                                 setIsOpen(false)
-                                navigateToPage(item.path, item.title)
+                                navigateToPage(item.path)
                             }}
                         >
                             {item.title}

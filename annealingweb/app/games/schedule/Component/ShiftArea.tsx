@@ -1,13 +1,10 @@
 'use client';
-import React, { SetStateAction, useEffect, useState } from 'react';
+import React, { SetStateAction, useState } from 'react';
+import { Constraint } from "./Utilities";
 
 interface WorkerData {
     name: string;
     status: string[];
-}
-interface Constraint {
-  name: string;
-  parameters: Record<string, any>;
 }
 interface ShiftAreaProps {
     name: string;
@@ -20,11 +17,10 @@ interface ShiftAreaProps {
     setModify: React.Dispatch<React.SetStateAction<boolean>>,
     isModify: boolean,
     constraints: Constraint[];
-    setConstraints: React.Dispatch<React.SetStateAction<Constraint[]>>;
 }
 
-export default function ShiftArea({ name, data, column, toWs, gridStatus, setGridStatus, setModify, refresh, isModify,constraints, setConstraints }: ShiftAreaProps) {
-    const [machine,setMachine]=useState<string>("jinbo")
+export default function ShiftArea({ name, data, column, toWs, gridStatus, setGridStatus, setModify, refresh, isModify,constraints }: ShiftAreaProps) {
+    const [machine,setMachine]=useState<string>("compal")
 
     const updateCellStatus = (rowIndex: number, colIndex: number, value: string) => {
         setGridStatus((prev) => {
@@ -39,8 +35,19 @@ export default function ShiftArea({ name, data, column, toWs, gridStatus, setGri
 
 
     const SendToWs = (action: string) => {
-        console.log(JSON.stringify({data,constraints}))
-        toWs(JSON.stringify({ action: action, data: data,constraints: constraints,machine:machine }));
+        const scheduleData = data.map((worker, rowIndex) => ({
+            ...worker,
+            status: gridStatus[rowIndex] ?? worker.status,
+        }));
+        console.log(JSON.stringify({ data: scheduleData, constraints }))
+        toWs(JSON.stringify({
+            action: action,
+            data: scheduleData,
+            constraints: constraints,
+            machine: machine,
+            user: "default_user",
+            schedulename: name,
+        }));
     }
 
 
@@ -127,7 +134,7 @@ function ControlPanel({ SendToWs, refresh, setModify, isModify,machine,setMachin
         <div className='flex items-center gap-x-6 px-4 '>
             <div>
                 <select value={machine} onChange={(e)=>setMachine(e.target.value)}>
-                <option value="jinbo">仁寶</option>
+                <option value="compal">仁寶</option>
                 <option value="fujitsu">富士通</option>
                 <option value="da">模擬退火</option>
                 </select>

@@ -1,58 +1,103 @@
 'use client'
 /* eslint-disable */
-import React, { useActionState, useEffect, useRef, useState } from "react";
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useRef, useState } from "react";
 
 export default function Home() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const router = useRouter();
     const [progress, setProgress] = useState<number>(0); // 儲存載入進度
     const [isUnityLoaded, setIsUnityLoaded] = useState<boolean>(false); // 追蹤 Unity 是否載入完成
-
-  
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     useEffect(() => {
-        const loadUnity = async () => {
-            const buildUrl = "/digitalAnnealing/Build";
-            const loaderUrl = buildUrl + "/digitalAnnealing.loader.js";
+        let cancelled = false;
+        let unityInstance: any = null;
+        // 先抓住 canvas 元素：unmount 時 canvasRef.current 會先被 React 清成 null
+        const canvasEl = canvasRef.current;
 
-            const config = {
-                dataUrl: buildUrl + "/digitalAnnealing.data",
-                frameworkUrl: buildUrl + "/digitalAnnealing.framework.js",
-                codeUrl: buildUrl + "/digitalAnnealing.wasm",
-                streamingAssetsUrl: "StreamingAssets",
-                companyName: "DefaultCompany",
-                productName: "digitalAnnealing",
-                productVersion: "1.0",
-                showBanner: (msg: string, type: string) => {
-                    console.warn(`[Unity ${type}]: ${msg}`);
-                },
-            };
+        const buildUrl = "/digitalAnnealing/Build";
+        const loaderUrl = buildUrl + "/digitalAnnealing.loader.js";
 
-            const script = document.createElement("script");
-            script.src = loaderUrl;
-            script.onload = () => {
-                // @ts-ignore
-                createUnityInstance(canvasRef.current, config, (progress: number) => {
-                    setProgress(progress); // 更新進度
-                    console.log(`Loading: ${Math.round(progress * 100)}%`);
-                }).then((unityInstance: any) => {
-                    console.log("Unity loaded!");
-                    setIsUnityLoaded(true); // 標記 Unity 載入完成
-                }).catch((err: any) => {
-                    console.error("Unity error:", err);
-                    setIsUnityLoaded(true); // 即使出錯也隱藏進度條
-                });
-            };
-            document.body.appendChild(script);
+        const config = {
+            dataUrl: buildUrl + "/digitalAnnealing.data",
+            frameworkUrl: buildUrl + "/digitalAnnealing.framework.js",
+            codeUrl: buildUrl + "/digitalAnnealing.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "DefaultCompany",
+            productName: "digitalAnnealing",
+            productVersion: "1.0",
+            showBanner: (msg: string, type: string) => {
+                console.warn(`[Unity ${type}]: ${msg}`);
+            },
         };
 
-        loadUnity();
+        const script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            if (cancelled || !canvasEl) return;
+            // @ts-ignore
+            createUnityInstance(canvasEl, config, (progress: number) => {
+                if (!cancelled) setProgress(progress);
+            }).then((instance: any) => {
+                unityInstance = instance;
+                if (cancelled) {
+                    // 頁面已離開，直接關掉剛載好的 instance
+                    instance?.Quit?.().catch?.(() => { });
+                    return;
+                }
+                console.log("Unity loaded!");
+                setIsUnityLoaded(true);
+            }).catch((err: any) => {
+                console.error("Unity error:", err);
+                if (!cancelled) {
+                    setLoadError("Unity 載入失敗，請重新整理頁面再試");
+                    setIsUnityLoaded(true); // 隱藏進度條
+                }
+            });
+        };
+        script.onerror = () => {
+            if (!cancelled) {
+                setLoadError("無法載入 Unity loader，請確認網路後重新整理");
+                setIsUnityLoaded(true);
+            }
+        };
+        document.body.appendChild(script);
+
+        return () => {
+            // 離開頁面時清理，避免重複進入時疊出第二個 instance / WebGL context 洩漏
+            cancelled = true;
+            script.remove();
+
+            if (!unityInstance) return;
+
+            // React 會立刻把 canvas 從 DOM 移除，但 Unity 的 main loop 要等 Quit()
+            // 跑完才停，期間 emscripten 還會去找 canvas（wheel callback 等），
+            // 找不到就丟 "Cannot read properties of null" 錯誤。
+            // 先把 canvas 藏起來塞回 document.body，等 Quit 完成後再真正移除。
+            if (canvasEl) {
+                canvasEl.style.display = "none";
+                document.body.appendChild(canvasEl);
+            }
+
+            const finalize = () => {
+                canvasEl?.remove();
+            };
+
+            try {
+                const quitResult = unityInstance.Quit?.();
+                if (quitResult && typeof quitResult.then === "function") {
+                    quitResult.then(finalize, finalize);
+                } else {
+                    finalize();
+                }
+            } catch {
+                finalize();
+            }
+        };
     }, []);
 
     return (
         <>
-            <div id="unity-container" className="unity-desktop flex justify-center pt-[100px] " style={{ position: 'relative' }}>
+            <div id="unity-container" className="unity-desktop flex justify-center" style={{ position: 'relative' }}>
                 {!isUnityLoaded && (
                     <div
                         style={{
@@ -91,12 +136,24 @@ export default function Home() {
                         </div>
                     </div>
                 )}
+                {loadError && (
+                    <div className="absolute left-1/2 top-4 z-20 -translate-x-1/2 rounded-lg bg-red-600 px-6 py-3 text-white shadow-lg">
+                        {loadError}
+                    </div>
+                )}
                 <canvas
                     ref={canvasRef}
                     id="unity-canvas"
                     width={1400}
                     height={800}
-                    style={{ background: "#231F20", display: isUnityLoaded ? 'block' : 'none' }}
+                    style={{
+                        background: "#231F20",
+                        display: 'block',
+                        width: '100%',
+                        maxWidth: '1400px',
+                        height: 'auto',
+                        aspectRatio: '1400 / 800',
+                    }}
                     tabIndex={-1}
                 ></canvas>
             </div>
