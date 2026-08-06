@@ -164,7 +164,7 @@ export default function Dashboard() {
     setIsPending(true);
 
     try {
-      const res=await fetch('/api/toCGA',{
+      const res=await fetch('/annealing/api/toCGA',{
         method:'POST',
         headers:{
           'Content-Type':'application/json'

@@ -29,7 +29,7 @@ export default function ContactUs() {
         }
 
         try {
-            const response = await fetch('/api/sendEmail', {
+            const response = await fetch('/annealing/api/sendEmail', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
