@@ -14,7 +14,7 @@ export default function Home() {
         // 先抓住 canvas 元素：unmount 時 canvasRef.current 會先被 React 清成 null
         const canvasEl = canvasRef.current;
 
-        const buildUrl = "/digitalAnnealing/Build";
+        const buildUrl = "/annealing/digitalAnnealing/Build";
         const loaderUrl = buildUrl + "/digitalAnnealing.loader.js";
 
         const config = {

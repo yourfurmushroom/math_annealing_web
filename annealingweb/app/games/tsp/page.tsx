@@ -101,7 +101,7 @@ export default function Home() {
                             console.error(`Failed to load image: /images/${i}.png`);
                             resolve();
                         };
-                        img.src = `/images/${i}.png`;
+                        img.src = `/annealing/images/${i}.png`;
                     });
                 })
             );
@@ -527,7 +527,7 @@ export default function Home() {
                 className="relative min-h-[calc(100vh_-_var(--navbar-offset))] w-full overflow-hidden bg-black lg:h-[calc(100vh_-_var(--navbar-offset))] lg:min-h-0"
                 style={{
                     position: 'relative',
-                    backgroundImage: "url('/images/background.png')",
+                    backgroundImage: "url('/annealing/images/background.png')",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat"

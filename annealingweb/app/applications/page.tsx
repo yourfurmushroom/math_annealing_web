@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <main className="min-h-screen w-full bg-white dark:bg-slate-950">
       {/* 頂部 Banner */}
-      <div className="relative flex h-[25vh] w-full items-end bg-[url('/background.jpg')] bg-cover bg-center bg-no-repeat">
+      <div className="relative flex h-[25vh] w-full items-end bg-[url('/annealing/background.jpg')] bg-cover bg-center bg-no-repeat">
         <div className="absolute inset-0 bg-slate-900/20" />
 
         <div className="relative z-10 w-full px-6 pb-8 lg:px-40">
@@ -187,7 +187,7 @@ function ApplicationCard({ x }: ApplicationCardProps) {
                           className="shrink-0 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200"
                         >
                           <Image
-                            src={applicationImagePath}
+                            src={`/annealing/${applicationImagePath}`}
                             alt={`${x.name} 圖片 ${index + 1}`}
                             width={320}
                             height={320}

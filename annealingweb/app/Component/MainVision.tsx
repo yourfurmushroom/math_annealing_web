@@ -6,7 +6,7 @@ export default function MainVision() {
     <div className="relative min-h-[calc(100vh_-_var(--navbar-offset))] w-full bg-black px-4 sm:px-6">
       <div className="flex min-h-[inherit] flex-col items-center justify-center text-center text-white pb-24">
         <Image
-          src="/nstc_logo.png"
+          src="/annealing/nstc_logo.png"
           alt="國家科學及技術委員會"
           width={500}
           height={107}

@@ -20,10 +20,8 @@ export default function MainContent() {
     return (
         <div className="w-full bg-white dark:bg-slate-950">
 
-            {/* 1. 歡迎區塊 (Hero Section) */}
             <section className="relative overflow-hidden px-6 py-24 sm:py-32 lg:px-8 border-b border-slate-100 dark:border-slate-800 " id="mainContent">
                 <div className="mx-auto max-w-5xl">
-                    {/* 標題區塊：Pilot Research Programs of Digital Annealers */}
                     <div className="text-center">
                         <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-6xl lg:text-7xl dark:text-white leading-tight">
                             Pilot Research Programs <br />
@@ -34,14 +32,12 @@ export default function MainContent() {
                     </div>
 
                     <div className="mt-10 flex flex-col items-start w-full max-w-4xl">
-                        {/* 標籤：About the Program */}
                         <div className="inline-flex items-center border-l-4 border-blue-600 bg-blue-50 px-4 py-2 mb-4 dark:bg-blue-900/20">
                             <span className="text-sm font-bold tracking-widest text-blue-600 uppercase">
                                 About the Program
                             </span>
                         </div>
 
-                        {/* 文字內容：緊跟在標籤下方 */}
                         <div className="text-left space-y-2">
                             <p className="whitespace-pre-line text-xl leading-snug text-slate-700 dark:text-slate-300 font-medium">
                                 {welcomeMessage}
@@ -51,7 +47,17 @@ export default function MainContent() {
                 </div>
             </section >
 
-            
+            <section className=" w-full h-auto bg-slate-50 py-24 dark:bg-slate-900/50">
+                <Image
+                    src="/annealing/annealing_intro.svg"
+                    alt="簡介"
+                    width={500}
+                    height={107}
+                    priority
+                    className="mb-4 h-auto w-auto max-w-full lg:mb-6"
+                />
+            </section>
+
 
             < section className="bg-slate-50 py-24 dark:bg-slate-900/50" >
                 <div className="mx-auto max-w-6xl px-6">
@@ -84,7 +90,7 @@ export default function MainContent() {
                                 <div className="mx-auto max-w-4xl text-center">
                                     <div className="mb-4 text-left relative h-[350px] sm:h-[450px] w-full overflow-hidden rounded-3xl bg-slate-100 shadow-inner">
                                         <Image
-                                            src="/demo.png"
+                                            src="/annealing/demo.png"
                                             alt="Annealing Principles"
                                             fill
                                             sizes="(max-width: 1024px) 100vw, 896px"
@@ -111,23 +117,14 @@ export default function MainContent() {
                                     title="硬體整合應用"
                                     details={projectDetailHardware}
                                     color="text-purple-600"
-                                    tags={["組合優化","藥物設計", "光學微影"]}
+                                    tags={["組合優化", "藥物設計", "光學微影"]}
                                 />
                             </div>
                         )}
                     </div>
                 </div>
             </section >
-            <section className=" w-full h-auto bg-slate-50 py-24 dark:bg-slate-900/50">
-                <Image
-                    src="/annealing_intro.svg"
-                    alt="簡介"
-                    width={500}
-                    height={107}
-                    priority
-                    className="mb-4 h-auto w-auto max-w-full lg:mb-6"
-                />
-            </section>
+
         </div >
     )
 }

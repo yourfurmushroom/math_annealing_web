@@ -23,7 +23,7 @@ export default function PublicationPage() {
   return (
     <main className="min-h-screen w-full bg-white dark:bg-slate-950">
       {/* 頂部 Banner */}
-      <div className="relative flex h-[25vh] w-full items-end bg-[url('/background.jpg')] bg-cover bg-center bg-no-repeat">
+      <div className="relative flex h-[25vh] w-full items-end bg-[url('/annealing/background.jpg')] bg-cover bg-center bg-no-repeat">
         <div className="absolute inset-0 bg-slate-900/20" />
 
         <div className="relative z-10 w-full px-6 pb-8 lg:px-40">

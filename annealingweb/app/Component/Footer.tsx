@@ -14,7 +14,7 @@ export default function Footer() {
                         <div className="pt-2">
                             <span className="text-xs text-slate-500 block mb-2 font-medium">指導單位</span>
                             <Image
-                                src="/nstc_logo.png"
+                                src="/annealing/nstc_logo.png"
                                 alt="國家科學及技術委員會"
                                 width={200}
                                 height={50}
