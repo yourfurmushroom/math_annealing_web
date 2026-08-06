@@ -8,7 +8,7 @@ export default function Home() {
     <div className=" w-full">
       <MainVision></MainVision>
       <MainContent></MainContent>
-      <Footer></Footer>
+      
     </div>
   );
 }

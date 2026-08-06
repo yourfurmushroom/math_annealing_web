@@ -8,10 +8,10 @@ export default function MainVision() {
         <Image
           src="/nstc_logo.png"
           alt="國家科學及技術委員會"
-          width={300}
+          width={500}
           height={107}
           priority
-          className="title-fade-in mb-4 h-auto w-full max-w-[640px] lg:mb-6"
+          className="title-fade-in mb-4 h-auto w-auto max-w-[640px] lg:mb-6"
         />
 
         {/* 4. 標題與副標題：建議主標題可以改用 <h1> 標籤對 SEO 比較好 */}

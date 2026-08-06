@@ -51,14 +51,14 @@ export default function MainContent() {
                 </div>
             </section >
 
-            {/* 2. 研發與推廣區塊 */}
+            
+
             < section className="bg-slate-50 py-24 dark:bg-slate-900/50" >
                 <div className="mx-auto max-w-6xl px-6">
                     <div className="mb-16 text-center">
                         <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-white">研發與推廣</h2>
                     </div>
 
-                    {/* Tab 切換器 */}
                     <div className="mb-12 flex justify-center">
                         <div className="inline-flex rounded-2xl bg-slate-200 p-1.5 dark:bg-slate-800 shadow-inner">
                             <button
@@ -76,7 +76,6 @@ export default function MainContent() {
                         </div>
                     </div>
 
-                    {/* 內容展示區 */}
                     <div className="min-h-[600px] rounded-[3.5rem] bg-white p-8 shadow-xl ring-1 ring-slate-200 lg:p-16 dark:bg-slate-900 dark:ring-white/5 transition-all duration-500">
                         {tab === "algorithm" ? (
                             <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
@@ -119,6 +118,16 @@ export default function MainContent() {
                     </div>
                 </div>
             </section >
+            <section className=" w-full h-auto bg-slate-50 py-24 dark:bg-slate-900/50">
+                <Image
+                    src="/annealing_intro.svg"
+                    alt="簡介"
+                    width={500}
+                    height={107}
+                    priority
+                    className="mb-4 h-auto w-auto max-w-full lg:mb-6"
+                />
+            </section>
         </div >
     )
 }

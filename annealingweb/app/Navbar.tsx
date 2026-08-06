@@ -41,7 +41,7 @@ export default function NavBar() {
                 </button>
             </div>
 
-            <div className={`${isOpen ? "grid" : "hidden"} relative w-full gap-y-2 px-4 pb-3 text-center text-[15px] sm:text-[18px] lg:mx-10 lg:grid lg:w-[60%] lg:grid-cols-4 lg:gap-y-0 lg:px-0 lg:pb-0`}>
+            <div className={`${isOpen ? "grid" : "hidden"} relative w-full gap-y-2 px-4 pb-3 text-center text-[15px] sm:text-[18px] lg:mx-10 lg:grid lg:w-[60%] lg:grid-cols-5 lg:gap-y-0 lg:px-0 lg:pb-0`}>
                 <NavbarButton
                     title="首頁"
                     isActive={isActivePath("/")}
@@ -58,6 +58,11 @@ export default function NavBar() {
                     action={() => navigateToPage("/applications")}
                 />
 
+                <NavbarButton
+                    title="相關文獻"
+                    isActive={isActivePath("/publication")}
+                    action={() => navigateToPage("/publication")}
+                />
                 <DropDownNavbarButton
                     title="互動遊戲"
                     pathname={pathname}

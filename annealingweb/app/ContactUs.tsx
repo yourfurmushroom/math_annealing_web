@@ -112,17 +112,17 @@ export default function ContactUs() {
                         </div>
 
                         <div>
-                            <label htmlFor="duration" className="block text-sm text-gray-600 mb-1">申請時數 (最大 0.5 小時)</label>
+                            <label htmlFor="duration" className="block text-sm text-gray-600 mb-1">申請時數 (最大 30分鐘)</label>
                             <input 
                                 type="number" 
                                 id="duration" 
                                 name="duration" 
-                                max="0.5"
-                                min="0.1"
-                                step="0.1"
+                                max="30"
+                                min="0"
+                                step="1"
                                 required
                                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
-                                placeholder="例如：0.5"
+                                placeholder="例如：1 為 1分鐘"
                             />
                         </div>
 
