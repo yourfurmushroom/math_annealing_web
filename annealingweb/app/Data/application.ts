@@ -35,7 +35,7 @@ export const applications: Application[] = [
     imagePath: ["/application/schedule1.png"],
     details:
       "可自行設定總員工人數、總天數、每日值勤人數、最長連續工作日、最少休假天數，以及使用者自定之休假設定。",
-    link: "/games/schedule",
+    link: "/annealing/games/schedule",
   },
   {
     name: "光學微影技術之反向光罩設計",
@@ -68,7 +68,7 @@ export const applications: Application[] = [
     ],
     details:
       "挑戰以糖果為貨物的背包最佳化遊戲，體驗有限空間的取捨思考！積分高者獲更多糖果，知識與甜蜜一次收穫！",
-    link: "/games/container",
+    link: "/annealing/games/container",
   },
   {
     name: "CGA–Space Filling Designs",
@@ -87,6 +87,6 @@ export const applications: Application[] = [
     imagePath: ["/application/pokemon1.png"],
     details:
       "化身訓練家，在捕獲眾多寶可夢的過程中找出最短路徑，讓一般大眾感受數位退火在最佳化中的應用！",
-    link: "/games/tsp",
+    link: "/annealing/games/tsp",
   },
 ];
